@@ -3,8 +3,8 @@
 block_cipher = None
 
 
-a = Analysis(['ui_main.py'],
-             pathex=['G:\\OneDrive\\OneDrive\\python\\cal\\test_create'],
+a = Analysis(['Ui_main.py'],
+             pathex=['G:\\OneDrive\\OneDrive\\python\\RF_Cascade_Calculator'],
              binaries=[],
              datas=[],
              hiddenimports=[],
@@ -13,21 +13,20 @@ a = Analysis(['ui_main.py'],
              excludes=[],
              win_no_prefer_redirects=False,
              win_private_assemblies=False,
-             cipher=block_cipher)
+             cipher=block_cipher,
+             noarchive=False)
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
 exe = EXE(pyz,
           a.scripts,
-          exclude_binaries=True,
-          name='ui_main',
+          a.binaries,
+          a.zipfiles,
+          a.datas,
+          [],
+          name='Ui_main',
           debug=False,
+          bootloader_ignore_signals=False,
           strip=False,
           upx=True,
-          console=False )
-coll = COLLECT(exe,
-               a.binaries,
-               a.zipfiles,
-               a.datas,
-               strip=False,
-               upx=True,
-               name='ui_main')
+          runtime_tmpdir=None,
+          console=True )

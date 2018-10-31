@@ -1,0 +1,23 @@
+missing module named resource - imported by posix, G:\OneDrive\OneDrive\python\RF_Cascade_Calculator\Ui_main.py
+missing module named posix - imported by os, G:\OneDrive\OneDrive\python\RF_Cascade_Calculator\Ui_main.py
+missing module named _posixsubprocess - imported by subprocess, G:\OneDrive\OneDrive\python\RF_Cascade_Calculator\Ui_main.py
+missing module named org - imported by pickle, G:\OneDrive\OneDrive\python\RF_Cascade_Calculator\Ui_main.py
+missing module named clr - imported by pyreadline.clipboard.ironpython_clipboard, pyreadline.console.ironpython_console, G:\OneDrive\OneDrive\python\RF_Cascade_Calculator\Ui_main.py
+missing module named IronPythonConsole - imported by pyreadline.console.ironpython_console, G:\OneDrive\OneDrive\python\RF_Cascade_Calculator\Ui_main.py
+missing module named StringIO - imported by pyreadline.py3k_compat, G:\OneDrive\OneDrive\python\RF_Cascade_Calculator\Ui_main.py
+missing module named System - imported by pyreadline.clipboard.ironpython_clipboard, pyreadline.keysyms.ironpython_keysyms, pyreadline.console.ironpython_console, pyreadline.rlmain, G:\OneDrive\OneDrive\python\RF_Cascade_Calculator\Ui_main.py
+missing module named sets - imported by pyreadline.keysyms.common, G:\OneDrive\OneDrive\python\RF_Cascade_Calculator\Ui_main.py
+missing module named startup - imported by pyreadline.keysyms.common, pyreadline.keysyms.keysyms, G:\OneDrive\OneDrive\python\RF_Cascade_Calculator\Ui_main.py
+missing module named console - imported by pyreadline.console.ansi, G:\OneDrive\OneDrive\python\RF_Cascade_Calculator\Ui_main.py
+excluded module named _frozen_importlib - imported by importlib, importlib.abc, G:\OneDrive\OneDrive\python\RF_Cascade_Calculator\Ui_main.py
+missing module named _frozen_importlib_external - imported by importlib._bootstrap, importlib, importlib.abc, G:\OneDrive\OneDrive\python\RF_Cascade_Calculator\Ui_main.py
+missing module named _winreg - imported by platform, G:\OneDrive\OneDrive\python\RF_Cascade_Calculator\Ui_main.py
+missing module named _scproxy - imported by urllib.request
+missing module named java - imported by platform, G:\OneDrive\OneDrive\python\RF_Cascade_Calculator\Ui_main.py
+missing module named 'java.lang' - imported by platform, G:\OneDrive\OneDrive\python\RF_Cascade_Calculator\Ui_main.py, xml.sax._exceptions
+missing module named vms_lib - imported by platform, G:\OneDrive\OneDrive\python\RF_Cascade_Calculator\Ui_main.py
+missing module named termios - imported by tty, G:\OneDrive\OneDrive\python\RF_Cascade_Calculator\Ui_main.py, getpass
+missing module named grp - imported by shutil, tarfile, G:\OneDrive\OneDrive\python\RF_Cascade_Calculator\Ui_main.py
+missing module named pwd - imported by posixpath, shutil, tarfile, http.server, webbrowser, G:\OneDrive\OneDrive\python\RF_Cascade_Calculator\Ui_main.py, netrc, getpass
+missing module named 'org.python' - imported by copy, G:\OneDrive\OneDrive\python\RF_Cascade_Calculator\Ui_main.py, xml.sax
+missing module named _dummy_threading - imported by dummy_threading, G:\OneDrive\OneDrive\python\RF_Cascade_Calculator\Ui_main.py
