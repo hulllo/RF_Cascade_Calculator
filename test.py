@@ -75,10 +75,10 @@ class MyTable(QTableWidget):
     #===2：设置表格的表头名称
     def settableHeader(self):
         #columnname = ['A','B','C','D','E']
-        columnname = ['姓名', '性别', '年龄', '身高', '照片']
-        #rowname = ['a','b','c','d','e']
+        columnname = [str(x+1) for x in range(5)]
+        rowname = ['类型','型号','频率','增益','噪声']
         self.setHorizontalHeaderLabels(columnname)
-        #self.setVerticalHeaderLabels(rowname)
+        self.setVerticalHeaderLabels(rowname)
     #===3:给表格输入初始化数据
     def settableInitData(self):
         for i in range(5):
