@@ -21,7 +21,7 @@ class MyTable(QTableWidget):
 
         self.settableHeader()
         self.inputcelldata()
-        self.printitemtext()
+        # self.printitemtext()
         self.settableSelectMode()
         # self.settableHeaderFontColor()
         #self.setCellFontColor()
@@ -102,8 +102,11 @@ class MyTable(QTableWidget):
         combo = self.sender()
         row = combo.property('row')
         col = combo.property('col')
-        Text = combo.currentText()
-        print('combo row %d col %d TextChanged to %s' % (row, col, Text))
+        # Text = combo.currentText()
+        widget = self.cellWidget(row, col)
+        current_value = widget.currentText()
+        print(current_value)
+        # print('combo row %d col %d TextChanged to %s' % (row, col, Text))
 
     def printitemtext(self):
         for i in range(5):
