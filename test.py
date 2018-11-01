@@ -5,11 +5,18 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 import sys
 import time
+import sqlite3
 
 #基于Table Widget控件的表格
 class MyTable(QTableWidget):
     def __init__(self,parent=None):
         super(MyTable,self).__init__(parent)
+		
+        self.conn = sqlite3.connect('test.db')
+        self.cursor = self.conn.cursor()
+        self.cursor.execute("select type from component")
+        self.types = self.cursor.fetchall()
+        self.types = [x[0] for x in set(self.types)]
         self.setWindowTitle("第一个表格创建实验")
         self.setWindowIcon(QIcon("a1.png"))
         self.resize(800,500)  #设置表格尺寸
@@ -20,7 +27,10 @@ class MyTable(QTableWidget):
         # self.setShowGrid(False) #是否需要显示网格
 
         self.settableHeader()
-        self.inputcelldata()
+        self.inputrow0(5)
+        self.inputrow1(5)
+        self.inputrow2(5)
+        self.inputrow3_4(5)
         # self.printitemtext()
         self.settableSelectMode()
         # self.settableHeaderFontColor()
@@ -82,32 +92,72 @@ class MyTable(QTableWidget):
                 self.comBox.addItem("女")
                 self.setCellWidget(i,j,self.comBox)
 
-    def inputcelldata(self): #输入数据
-        self.setItem(0,0,QTableWidgetItem("张三"))
-        #self.setItem(0,1,"男")
-        for i in range(3):
+    def inputrow0(self,n):
+        for i in range(n):
             self.comBox = QComboBox()
             self.comBox.setEditable(True)
-            list_comBox = ['aa','bb','cc']
-            self.comBox.addItems(list_comBox)
-            self.comBox.setProperty('row', i)
-            self.comBox.setProperty('col',1)
-            self.comBox.currentTextChanged.connect(self.Combo_indexchanged)
-            self.setCellWidget(i, 1, self.comBox)
+            self.comBox.addItems(sorted(self.types))
+            self.comBox.setProperty('row', 0)
+            self.comBox.setProperty('col',i)
+            self.setCellWidget(0,i,self.comBox)
+            self.comBox.currentTextChanged.connect(lambda:self.Combo_indexchanged(0,i))
 
-        self.setItem(0,2,QTableWidgetItem(str(25)))
-        self.setItem(0,3,QTableWidgetItem(str(160.85)))
 
-    def Combo_indexchanged(self):
+    def inputrow1(self,n):
+        for i in range(n):
+            current_value = self.cellWidget(0,i).currentText()   
+            self.cursor.execute("select model from component where type=?",(current_value,))
+            self.models = self.cursor.fetchall()
+            self.models = [x[0] for x in set(self.models)]    
+            self.comBox = QComboBox()
+            self.comBox.setEditable(True)
+            self.comBox.addItems(self.models)
+            self.comBox.setProperty('row', 1)
+            self.comBox.setProperty('col',i)
+            self.setCellWidget(1,i,self.comBox)
+            self.comBox.currentTextChanged.connect(lambda:self.Combo_indexchanged(1,i))
+
+    def inputrow2(self,n):        
+        for i in range(n):
+            current_type = self.cellWidget(0,i).currentText()   
+            current_model = self.cellWidget(1,i).currentText()   
+            self.cursor.execute("select frq from component where type=? and model =?",(current_type,current_model))
+            self.frq = self.cursor.fetchall()
+            self.frq = [x[0] for x in set(self.frq)]    
+            self.comBox = QComboBox()
+            self.comBox.setEditable(True)
+            self.comBox.addItems(self.frq)
+            self.comBox.setProperty('row', 2)
+            self.comBox.setProperty('col',i)
+            self.setCellWidget(2,i,self.comBox)    
+            self.comBox.currentTextChanged.connect(lambda:self.Combo_indexchanged(2,i))
+
+            #初始化3，4行
+    def inputrow3_4(self,n):    
+        for i in range(n):
+            current_type = self.cellWidget(0,i).currentText()   
+            current_model = self.cellWidget(1,i).currentText()   
+            current_frq = self.cellWidget(2,i).currentText()   
+            self.cursor.execute("select gain from component where type=? and model =? and frq =?",(current_type,current_model,current_frq))
+            self.gain = self.cursor.fetchall()[0][0]
+            self.cursor.execute("select nf from component where type=? and model =? and frq =?",(current_type,current_model,current_frq))
+            self.nf = self.cursor.fetchall()[0][0]            
+            self.setItem(3,i,QTableWidgetItem(str(self.gain)))
+            self.setItem(4,i,QTableWidgetItem(str(self.nf)))
+
+    def Combo_indexchanged(self,row,col):
         combo = self.sender()
         row = combo.property('row')
         col = combo.property('col')
-        # Text = combo.currentText()
-        widget = self.cellWidget(row, col)
-        current_value = widget.currentText()
-        print(current_value)
-        # print('combo row %d col %d TextChanged to %s' % (row, col, Text))
-
+        if row == 0:
+            self.inputrow1(5)
+            self.inputrow2(5)
+            self.inputrow3_4(5)
+        if row == 1:
+            self.inputrow2(5)
+            self.inputrow3_4(5)
+        if row == 2:
+            self.inputrow3_4(5)
     def printitemtext(self):
         for i in range(5):
             for j in range(5):
