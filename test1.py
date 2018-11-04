@@ -1,8 +1,8 @@
 #-*-coding:utf-8-*-
 
-from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
+from PyQt5.QtWidgets import qApp,QAction,QMainWindow,QApplication,QWidget,QTableWidget,QVBoxLayout,QComboBox,QTableWidgetItem,QPushButton
+from PyQt5.QtGui import QIcon
+from PyQt5.QtCore import QThread,pyqtSignal,Qt
 import sys
 import time
 import sqlite3
@@ -22,7 +22,7 @@ class MyTable(QMainWindow):
 
 
     def initUI(self):
-        self.setGeometry(200, 100, 800, 500)        
+        self.setGeometry(200, 100, 900, 600)        
         self.setWindowTitle('状态栏')  
 
         compoundWidget = QWidget()
@@ -33,9 +33,9 @@ class MyTable(QMainWindow):
         self.colc = 5
         self.table1.setColumnCount(self.colc)
         self.table1.setRowCount(9)
-
-        self.table2.setColumnCount(4)
-        self.table2.setRowCount(2)
+        # self.table1.setStyleSheet()
+        self.table2.setColumnCount(6)
+        self.table2.setRowCount(4)
         # self.setShowGrid(False) #是否需要显示网格
 
 
@@ -59,6 +59,12 @@ class MyTable(QMainWindow):
         self.inputrow7_8(self.colc)
         self.inputrow9()
         self.inputrow10(self.colc)
+        self.editsheet_label()
+        self.editsheet_value_class()
+        self.editsheet_value_model()
+        self.editsheet_value_frq()
+        self.editsheet_value_gain_nf()
+        self.buttun_edit()
         # self.table1.itemtextchanged()
         # self.table1.settableSelectMode()
         # self.settableHeaderFontColor()
@@ -199,11 +205,9 @@ class MyTable(QMainWindow):
             self.table1.setItem(5,i,QTableWidgetItem(str(self.nf)))
 
     def inputrow7_8(self,n):
-        print('succe')
         for i in range(n):
             if i == 0 :
                 totalgain = self.table1.item(4,0).text()
-                print('totalgain',totalgain)
                 totalnf = self.table1.item(5,0).text()
             else:
                 if self.table1.item(7,i-1).text() == '[]':
@@ -234,9 +238,76 @@ class MyTable(QMainWindow):
         NF = float(self.table1.item(8,n-1).text())
         SNR = float(self.table2.item(1,2).text())
         sens = 10*math.log10(K*T*BW) + NF + SNR
-        print(sens)
         self.table2.setItem(1,3,QTableWidgetItem(str(sens)))
         self.table2.item(1,3).setFlags(Qt.ItemIsEnabled)
+
+    def editsheet_label(self):
+        self.table2.setItem(2,0,QTableWidgetItem(str('类型')))
+        self.table2.item(2,0).setFlags(Qt.ItemIsEnabled)
+        self.table2.setItem(2,1,QTableWidgetItem(str('型号')))
+        self.table2.item(2,1).setFlags(Qt.ItemIsEnabled)
+        self.table2.setItem(2,2,QTableWidgetItem(str('频率')))
+        self.table2.item(2,2).setFlags(Qt.ItemIsEnabled)
+        self.table2.setItem(2,3,QTableWidgetItem(str('增益')))
+        self.table2.item(2,3).setFlags(Qt.ItemIsEnabled)
+        self.table2.setItem(2,4,QTableWidgetItem(str('噪声')))
+        self.table2.item(2,4).setFlags(Qt.ItemIsEnabled)
+    def editsheet_value_class(self):
+        comBox = QComboBox()
+        comBox.setEditable(True)
+        comBox.addItems(sorted(self.types))
+        comBox.setProperty('row', 0)
+        comBox.setProperty('col',0)
+        self.table2.setCellWidget(3,0,comBox)
+        comBox.currentTextChanged.connect(lambda:self.editsheet_Combo_textchanged())
+    def editsheet_value_model(self):
+        current_value = self.table2.cellWidget(3,0).currentText()   #获取类型
+        self.cursor.execute("select model from component where type=?",(current_value,))
+        models = self.cursor.fetchall()
+        models = [x[0] for x in set(models)]  
+        comBox = QComboBox()
+        comBox.setEditable(True)
+        comBox.addItems(sorted(models))
+        comBox.setProperty('row', 3)
+        comBox.setProperty('col',1)
+        self.table2.setCellWidget(3,1,comBox)
+        comBox.currentTextChanged.connect(lambda:self.editsheet_Combo_textchanged())
+    def editsheet_value_frq(self):        
+        current_type = self.table2.cellWidget(3,0).currentText()   
+        current_model = self.table2.cellWidget(3,1).currentText()   
+        self.cursor.execute("select frq from component where type=? and model =?",(current_type,current_model))
+        frq = self.cursor.fetchall()
+        frq = [x[0] for x in set(frq)]    
+        comBox = QComboBox()
+        comBox.setEditable(True)
+        comBox.addItems(frq)
+        comBox.setProperty('row', 3)
+        comBox.setProperty('col',2)
+        self.table2.setCellWidget(3,2,comBox)    
+        comBox.currentTextChanged.connect(lambda:self.editsheet_Combo_textchanged())
+
+            #初始化3，4行
+    def editsheet_value_gain_nf(self):    
+        current_type = self.table2.cellWidget(3,0).currentText()   
+        current_model = self.table2.cellWidget(3,1).currentText()   
+        current_frq = self.table2.cellWidget(3,2).currentText()   
+        self.cursor.execute("select gain from component where type=? and model =? and frq =?",(current_type,current_model,current_frq))
+        gain=self.cursor.fetchall()
+        if gain == []:
+            return False
+        gain = gain[0][0]
+        self.cursor.execute("select nf from component where type=? and model =? and frq =?",(current_type,current_model,current_frq))
+        nf = self.cursor.fetchall()[0][0]
+        self.table2.setItem(3,3,QTableWidgetItem(str(gain)))
+        self.table2.setItem(3,4,QTableWidgetItem(str(nf)))
+    def buttun_edit(self):
+        butten_del = QPushButton('删除器件')
+        butten_add = QPushButton('增加器件')
+        self.table2.setCellWidget(3,5,butten_del)
+        self.table2.setCellWidget(2,5,butten_add)
+        butten_del.clicked.connect(self.del_component)
+        butten_add.clicked.connect(self.add_component)
+
 
     def Combo_textchanged(self,row,col):
         combo = self.sender()
@@ -257,9 +328,107 @@ class MyTable(QMainWindow):
             if self.inputrow4_5(self.colc):
                 return
             self.inputrow7_8(self.colc)
+    def editsheet_Combo_textchanged(self):
+        combo = self.sender()
+        row = combo.property('row')
+        col = combo.property('col')
+        if col == 0:
+            self.editsheet_value_model()
+            self.editsheet_value_frq()
+            if self.editsheet_value_gain_nf():
+                return
+        elif col == 1:
+            self.editsheet_value_frq()
+            if self.editsheet_value_gain_nf():
+                return
+        elif col == 2:
+            if self.editsheet_value_gain_nf():
+                return
+    def del_component(self):
+        class_ = self.table2.cellWidget(3,0).currentText()
+        if class_ == '':
+            self.statusBar().showMessage('未输入类型！')
+            return
+        model = self.table2.cellWidget(3,1).currentText()
+        if model == '':
+            self.statusBar().showMessage('未输入型号！')
+            return        
+        frq = self.table2.cellWidget(3,2).currentText()
+        if frq == '':
+            self.statusBar().showMessage('未输入频率！')
+            return      
+        self.cursor.execute("select * from component")
+        db_tupelist = self.cursor.fetchall()
+        # print(db_tupelist)
+        len_ = str(len(db_tupelist))
+        # cur.execute('PRAGMA table_info(component)')
+        self.cursor.execute("select * from component where type = '%s' and model = '%s' and frq = '%s'" % (class_,model,frq))
+        data_existed = self.cursor.fetchall()
+        if data_existed == []:
+            print('不存在该器件')
+            self.statusBar().showMessage('不存在该器件')
+        else:
+            self.cursor.execute("delete from component where type = '%s' and model = '%s' and frq = '%s'" % (class_,model,frq))
+            self.cursor.execute("select * from component where type = '%s' and model = '%s' and frq = '%s'" % (class_,model,frq))
+            data_existed = self.cursor.fetchall()
+            if data_existed == []:
+                print('删除成功')
+                self.statusBar().showMessage('删除成功')
+                self.conn.commit()
+                self.editsheet_value_class()
+                self.editsheet_value_model()    
+    def add_component(self):
+        class_ = self.table2.cellWidget(3,0).currentText()
+        if class_ == '':
+            self.statusBar().showMessage('未输入类型！')
+            return
+        model = self.table2.cellWidget(3,1).currentText()
+        if model == '':
+            self.statusBar().showMessage('未输入型号！')
+            return        
+        frq = self.table2.cellWidget(3,2).currentText()
+        if frq == '':
+            self.statusBar().showMessage('未输入频率！')
+            return    
+        gain =  self.table2.item(3,3).text()
+        if gain == '':
+            self.statusBar().showMessage('未输入增益！')
+            return
+        elif not self.is_num(gain):
+            self.statusBar().showMessage('需输入数字！')
+            return
+        nf = self.table2.item(3,4).text()
+        if frq == '':
+            self.statusBar().showMessage('未输入噪声系数！')
+            return    
+        elif not self.is_num(nf):
+            self.statusBar().showMessage('需输入数字！')
+            return
+        self.cursor.execute("select * from component")
+        db_tupelist = self.cursor.fetchall()
+        # print(db_tupelist)
+        len_ = str(int(db_tupelist[-1][0])+1)
+        print(len_)
+        # cur.execute('PRAGMA table_info(component)')
+        self.cursor.execute("select * from component where type = '%s' and model = '%s' and frq = '%s'" % (class_,model,frq))
+        data_existed = self.cursor.fetchall()
+        if data_existed:
+            print ('器件存在:',data_existed)
+            self.statusBar().showMessage('器件存在:{0}'.format(data_existed))
 
-                    
-
+        else:    
+            self.cursor.execute("select * from component")
+            self.cursor.execute("insert into component (id, type,model,frq,gain,nf) values ('%s','%s','%s','%s','%f','%f')" % (len_, class_,model,frq,float(gain),float(nf)))
+            # self.cursor.execute("select * from component")
+            self.cursor.execute("select * from component where id = '%s' and type = '%s' and model = '%s' and frq = '%s' and gain = '%f' and nf = '%f'" % (len_, class_,model,frq,float(gain),float(nf)))
+            data_existed = self.cursor.fetchall()
+            if data_existed != []:
+                print(data_existed)
+                print('添加成功')
+                self.statusBar().showMessage('添加成功')
+                self.conn.commit()
+                self.editsheet_value_class()
+                self.editsheet_value_model()
     """在单元格里加入控件QComboBox"""
     def addwidgettocell(self):
         comBox = QComboBox()
