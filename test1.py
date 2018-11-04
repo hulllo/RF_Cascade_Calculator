@@ -8,51 +8,59 @@ import time
 import sqlite3
 import math
 
-class Example(QMainWindow):
+class MyTable(QMainWindow):
 
     def __init__(self):
         super().__init__()
 
-        self.initUI()
-
-    def initUI(self):
-
-        self.statusBar().showMessage('这里是状态栏...')
-        self.table = QTableWidget()
-        self.setCentralWidget(self.table)
-        self.setGeometry(300, 300, 300, 220)        
-        self.setWindowTitle('状态栏')        
-        self.show()
-
-#基于Table Widget控件的表格
-class MyTable(QTableWidget):
-    def __init__(self,parent=None):
-        super(MyTable,self).__init__(parent)
         self.conn = sqlite3.connect('test.db')
         self.cursor = self.conn.cursor()
         self.cursor.execute("select type from component")
         self.types = self.cursor.fetchall()
         self.types = [x[0] for x in set(self.types)]
-        self.setWindowTitle("第一个表格创建实验")
-        self.setWindowIcon(QIcon("a1.png"))
-        self.resize(800,500)  #设置表格尺寸
+        self.initUI()
 
+
+    def initUI(self):
+        self.setGeometry(200, 100, 800, 500)        
+        self.setWindowTitle('状态栏')  
+
+        compoundWidget = QWidget()
+        self.table1 = QTableWidget()
+        self.table2 = QTableWidget()
+        # self.table2.resize(50,50)  #设置表格尺寸
         #===1:创建初始表格
-        self.colc = 8
-        self.setColumnCount(self.colc)
-        self.setRowCount(11)
+        self.colc = 5
+        self.table1.setColumnCount(self.colc)
+        self.table1.setRowCount(9)
+
+        self.table2.setColumnCount(4)
+        self.table2.setRowCount(2)
         # self.setShowGrid(False) #是否需要显示网格
+
+
+        # hbox = QHBoxLayout()
+        # hbox.addWidget(self.table2)
+
+        vbox = QVBoxLayout()
+        vbox.addWidget(self.table1)
+        # vbox.addStretch(1)
+        vbox.addWidget(self.table2)
+        vbox.setStretchFactor(self.table1,2)
+        vbox.setStretchFactor(self.table2,1)
+        compoundWidget.setLayout(vbox)
+        self.setCentralWidget(compoundWidget)
 
         self.settableHeader()
         self.inputrow_class(self.colc)
         self.inputrow_model(self.colc)
         self.inputrow_frq(self.colc)
         self.inputrow4_5(self.colc)
-        self.inputrow9_8(self.colc)
-        self.inputrow9(self.colc)
+        self.inputrow7_8(self.colc)
+        self.inputrow9()
         self.inputrow10(self.colc)
-        # self.itemtextchanged()
-        self.settableSelectMode()
+        # self.table1.itemtextchanged()
+        # self.table1.settableSelectMode()
         # self.settableHeaderFontColor()
         # self.setCellFontColor()
         # self.setCellAlign()
@@ -66,29 +74,41 @@ class MyTable(QTableWidget):
         # layout.addWidget(MyTable)
         # self.setLayout(layout)
 
+        exitAction = QAction(QIcon('F:\Python\PyQt5\MenusAndToolbar\images\exit.png'), '&退出', self)
+        exitAction.setShortcut('Ctrl+Q')
+        exitAction.setStatusTip('退出应用程序')
+        exitAction.triggered.connect(qApp.quit)
+        self.statusBar()
+        menubar = self.menuBar()
+        fileMenu = menubar.addMenu('&文件')
+        fileMenu.addAction(exitAction)
 
-        self.itemChanged.connect(self.item_textchanged) 
-    
+        self.table1.itemChanged.connect(self.table1_item_textchanged) 
+        self.table2.itemChanged.connect(self.table2_item_textchanged) 
+    def is_num(self, str_):
+        try:
+            float(str_)
+            return True
+        except:
+            return False
     #表格文字变化处理函数
-    def item_textchanged(self, item):
+    def table1_item_textchanged(self, item):
         row = item.row()
         col = item.column()
         Text = item.text()
-        print('cell row %d col %d Text to %s' % (row, col, Text)) 
-            
-        if row == 10 and col !=4 :
-            if item.text().isdigit():
-                self.inputrow10(self.colc)   
-            
-        elif row == 4 or row == self.colc:
-            if item.text().isdigit():   
-                self.inputrow9_8(self.colc)
+        if row == 4 or row == 5:
+            if self.is_num(Text): 
+                self.inputrow7_8(self.colc)
                 self.inputrow10(self.colc)
-
+    def table2_item_textchanged(self,item):
+        Text = item.text()
+        if item.column() != 3:
+            if self.is_num(Text):
+                self.inputrow10(self.colc) 
     #===1:设置表格单元格尺寸
     def settableSize(self):
         """
-        首先，可以指定某个行或者列的大小
+    5  首先，可以指定某个行或者列的大小
         self.MyTable.setColumnWidth(2,50)  #将第2列的单元格，设置成50宽度
         self.MyTable.setRowHeight(2,60)      #将第2行的单元格，设置成60的高度
         还可以将行和列的大小设为与内容相匹配
@@ -107,14 +127,14 @@ class MyTable(QTableWidget):
         #columnname = ['A','B','C','D','E']
         columnname = [str(x+1) for x in range(self.colc)]
         rowname = ['类型','型号','频率','-','增益','噪声','-','Σ 增益','Σ 噪声','-','-']
-        self.setHorizontalHeaderLabels(columnname)
-        self.setVerticalHeaderLabels(rowname)
+        self.table1.setHorizontalHeaderLabels(columnname)
+        self.table1.setVerticalHeaderLabels(rowname)
     #===3:给表格输入初始化数据
     def settableInitData(self):
         for i in range(self.colc):
             for j in range(self.colc):
                 #1)直接在表格中添加数据
-                self.setItem(i,j,QTableWidgetItem(str(i)+str(j)))
+                self.table1.setItem(i,j,QTableWidgetItem(str(i)+str(j)))
 
                 #2）在表格的单元格中加入控件
                 self.comBox = QComboBox()
@@ -129,13 +149,13 @@ class MyTable(QTableWidget):
             self.comBox.addItems(sorted(self.types))
             self.comBox.setProperty('row', 0)
             self.comBox.setProperty('col',i)
-            self.setCellWidget(0,i,self.comBox)
+            self.table1.setCellWidget(0,i,self.comBox)
             self.comBox.currentTextChanged.connect(lambda:self.Combo_textchanged(0,i))
 
 
     def inputrow_model(self,n):
         for i in range(n):
-            current_value = self.cellWidget(0,i).currentText()   
+            current_value = self.table1.cellWidget(0,i).currentText()   
             self.cursor.execute("select model from component where type=?",(current_value,))
             self.models = self.cursor.fetchall()
             self.models = [x[0] for x in set(self.models)]    
@@ -144,13 +164,13 @@ class MyTable(QTableWidget):
             self.comBox.addItems(sorted(self.models))
             self.comBox.setProperty('row', 1)
             self.comBox.setProperty('col',i)
-            self.setCellWidget(1,i,self.comBox)
+            self.table1.setCellWidget(1,i,self.comBox)
             self.comBox.currentTextChanged.connect(lambda:self.Combo_textchanged(1,i))
 
     def inputrow_frq(self,n):        
         for i in range(n):
-            current_type = self.cellWidget(0,i).currentText()   
-            current_model = self.cellWidget(1,i).currentText()   
+            current_type = self.table1.cellWidget(0,i).currentText()   
+            current_model = self.table1.cellWidget(1,i).currentText()   
             self.cursor.execute("select frq from component where type=? and model =?",(current_type,current_model))
             self.frq = self.cursor.fetchall()
             self.frq = [x[0] for x in set(self.frq)]    
@@ -159,15 +179,15 @@ class MyTable(QTableWidget):
             self.comBox.addItems(self.frq)
             self.comBox.setProperty('row', 2)
             self.comBox.setProperty('col',i)
-            self.setCellWidget(2,i,self.comBox)    
+            self.table1.setCellWidget(2,i,self.comBox)    
             self.comBox.currentTextChanged.connect(lambda:self.Combo_textchanged(2,i))
 
             #初始化3，4行
     def inputrow4_5(self,n):    
         for i in range(n):
-            current_type = self.cellWidget(0,i).currentText()   
-            current_model = self.cellWidget(1,i).currentText()   
-            current_frq = self.cellWidget(2,i).currentText()   
+            current_type = self.table1.cellWidget(0,i).currentText()   
+            current_model = self.table1.cellWidget(1,i).currentText()   
+            current_frq = self.table1.cellWidget(2,i).currentText()   
             self.cursor.execute("select gain from component where type=? and model =? and frq =?",(current_type,current_model,current_frq))
             self.gain=self.cursor.fetchall()
             if self.gain == []:
@@ -175,46 +195,48 @@ class MyTable(QTableWidget):
             self.gain = self.gain[0][0]
             self.cursor.execute("select nf from component where type=? and model =? and frq =?",(current_type,current_model,current_frq))
             self.nf = self.cursor.fetchall()[0][0]
-            self.setItem(4,i,QTableWidgetItem(str(self.gain)))
-            self.setItem(5,i,QTableWidgetItem(str(self.nf)))
+            self.table1.setItem(4,i,QTableWidgetItem(str(self.gain)))
+            self.table1.setItem(5,i,QTableWidgetItem(str(self.nf)))
 
-    def inputrow9_8(self,n):
+    def inputrow7_8(self,n):
+        print('succe')
         for i in range(n):
             if i == 0 :
-                totalgain = self.gain
+                totalgain = self.table1.item(4,0).text()
+                print('totalgain',totalgain)
+                totalnf = self.table1.item(5,0).text()
             else:
-                print(type(self.item(7,i-1).text()))
-                if self.item(7,i-1).text() == '[]':
+                if self.table1.item(7,i-1).text() == '[]':
                     return False
-                totalgain = float(self.item(4,i).text()) + float(self.item(7,i-1).text()) 
-            if i == 0 :
-                totalnf = self.nf
-            else:
-                print('debug',i)
-                totalnf = 10*math.log10(10**(float(self.item(8,i-1).text())/10)+(10**(float(self.item(5,i).text())/10)-1)/10**(float(self.item(7,i-1).text())/10))  
-            self.setItem(7,i,QTableWidgetItem(str(totalgain)))
-            self.setItem(8,i,QTableWidgetItem(str(totalnf)))
-    def inputrow9(self,n):
-        self.setItem(9,0,QTableWidgetItem(str('温度(℃)')))
-        self.item(9,0).setFlags(Qt.ItemIsEnabled)
-        self.setItem(10,0,QTableWidgetItem(str('20')))
-        self.setItem(9,1,QTableWidgetItem(str('带宽(MHz)')))
-        self.item(9,1).setFlags(Qt.ItemIsEnabled)
-        self.setItem(10,1,QTableWidgetItem(str('10')))
-        self.setItem(9,2,QTableWidgetItem(str('信噪比(dB)')))
-        self.item(9,2).setFlags(Qt.ItemIsEnabled)
-        self.setItem(10,2,QTableWidgetItem(str('-1')))
-        self.setItem(9,n-1,QTableWidgetItem(str('灵敏度(dB)')))
-        self.item(9,n-1).setFlags(Qt.ItemIsEnabled)
+                totalgain = float(self.table1.item(4,i).text()) + float(self.table1.item(7,i-1).text()) 
+                totalnf = 10*math.log10(10**(float(self.table1.item(8,i-1).text())/10)+(10**(float(self.table1.item(5,i).text())/10)-1)/10**(float(self.table1.item(7,i-1).text())/10))  
+            self.table1.setItem(7,i,QTableWidgetItem(str(totalgain)))
+            self.table1.item(7,i).setFlags(Qt.ItemIsEnabled)
+            self.table1.setItem(8,i,QTableWidgetItem(str(totalnf)))
+            self.table1.item(8,i).setFlags(Qt.ItemIsEnabled)
+    def inputrow9(self):
+        self.table2.setItem(0,0,QTableWidgetItem(str('温度(℃)')))
+        self.table2.item(0,0).setFlags(Qt.ItemIsEnabled)
+        self.table2.setItem(1,0,QTableWidgetItem(str('20')))
+        self.table2.setItem(0,1,QTableWidgetItem(str('带宽(MHz)')))
+        self.table2.item(0,1).setFlags(Qt.ItemIsEnabled)
+        self.table2.setItem(1,1,QTableWidgetItem(str('10')))
+        self.table2.setItem(0,2,QTableWidgetItem(str('信噪比(dB)')))
+        self.table2.item(0,2).setFlags(Qt.ItemIsEnabled)
+        self.table2.setItem(1,2,QTableWidgetItem(str('-1')))
+        self.table2.setItem(0,3,QTableWidgetItem(str('灵敏度(dB)')))
+        self.table2.item(0,3).setFlags(Qt.ItemIsEnabled)
 
     def inputrow10(self,n):
         K = 1.3806505*(10**(-20))
-        T = float(self.item(10,0).text()) + 273.15
-        BW = float(self.item(10,1).text()) * 1000000
-        NF = float(self.item(8,n-1).text())
-        SNR = float(self.item(10,2).text())
+        T = float(self.table2.item(1,0).text()) + 273.15
+        BW = float(self.table2.item(1,1).text()) * 1000000
+        NF = float(self.table1.item(8,n-1).text())
+        SNR = float(self.table2.item(1,2).text())
         sens = 10*math.log10(K*T*BW) + NF + SNR
-        self.setItem(10,n-1,QTableWidgetItem(str(sens)))
+        print(sens)
+        self.table2.setItem(1,3,QTableWidgetItem(str(sens)))
+        self.table2.item(1,3).setFlags(Qt.ItemIsEnabled)
 
     def Combo_textchanged(self,row,col):
         combo = self.sender()
@@ -225,16 +247,16 @@ class MyTable(QTableWidget):
             self.inputrow_frq(self.colc)
             if self.inputrow4_5(self.colc):
                 return
-            self.inputrow9_8(self.colc)
+            self.inputrow7_8(self.colc)
         elif row == 1:
             self.inputrow_frq(self.colc)
             if self.inputrow4_5(self.colc):
                 return
-            self.inputrow9_8(self.colc)
+            self.inputrow7_8(self.colc)
         elif row == 2:
             if self.inputrow4_5(self.colc):
                 return
-            self.inputrow9_8(self.colc)
+            self.inputrow7_8(self.colc)
 
                     
 
@@ -349,7 +371,7 @@ class MyTable(QTableWidget):
     """5.设置单元格的大小(见settableSize()函数)"""
     """6 单元格Flag的实现"""
     def setCellFontColor(self):
-        newItem = self.item(0,1)
+        newItem = self.table1.item(0,1)
         newItem.setBackground(Qt.red)
         #newItem.setBackground(QColor(0, 250, 10))
         #newItem.(QColor(200, 111, 100))
@@ -369,7 +391,7 @@ class MyTable(QTableWidget):
         # newItem.setBackgroundColor(QColor(0,60,10))
         # newItem.setTextColor(QColor(200,111,100))
         newItem.setFont(textFont)
-        self.setItem(0, 0, newItem)
+        self.table1.setItem(0, 0, newItem)
     def setCellAlign(self):
         """
         这个比较简单，使用newItem.setTextAlignment()函数即可，
@@ -390,7 +412,7 @@ class MyTable(QTableWidget):
         """
         newItem = QTableWidgetItem("张三")
         newItem.setTextAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
-        self.setItem(0, 0, newItem)
+        self.table1.setItem(0, 0, newItem)
     def setCellSpan(self):
         """
         self.MyTable.setSpan(0, 0, 3, 1)
@@ -402,7 +424,7 @@ class MyTable(QTableWidget):
 
     def update_item_data(self, data):
         """更新内容"""
-        self.setItem(0, 0, QTableWidgetItem(data))  # 设置表格内容(行， 列) 文字
+        self.table1.setItem(0, 0, QTableWidgetItem(data))  # 设置表格内容(行， 列) 文字
 
 class UpdateData(QThread):
     """更新数据类"""
@@ -418,7 +440,6 @@ class UpdateData(QThread):
 if __name__ == '__main__':
     # 实例化表格
     app = QApplication(sys.argv)
-    ex = Example()
     myTable = MyTable()
     # 启动更新线程
     # update_data_thread = UpdateData()
