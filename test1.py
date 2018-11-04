@@ -65,6 +65,7 @@ class MyTable(QMainWindow):
         self.editsheet_value_frq()
         self.editsheet_value_gain_nf()
         self.buttun_edit()
+        self.settableHeaderVisible()
         # self.table1.itemtextchanged()
         # self.table1.settableSelectMode()
         # self.settableHeaderFontColor()
@@ -484,8 +485,8 @@ class MyTable(QMainWindow):
         self.MyTable.horizontalHeader().setVisible(False)
         """
         # 4.3 隐藏表头
-        self.verticalHeader().setVisible(False)
-        self.horizontalHeader().setVisible(False)
+        self.table2.verticalHeader().setVisible(False)
+        self.table2.horizontalHeader().setVisible(False)
     """对表头文字的字体、颜色进行设置"""
     def settableHeaderFontColor(self):
         """
