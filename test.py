@@ -16,17 +16,6 @@ class Example(QMainWindow):
         self.bt.move(300,300)
         self.show()
     
-    def contextMenuEvent(self, event):
-
-       cmenu = QMenu(self)
-
-       newAct = cmenu.addAction("新建")
-       opnAct = cmenu.addAction("保存")
-       quitAct = cmenu.addAction("退出")
-       action = cmenu.exec_(self.mapToGlobal(event.pos()))
-       print(event.pos())
-       if action == quitAct:
-           qApp.quit()
        
 if __name__ == '__main__':
     app = QApplication(sys.argv)

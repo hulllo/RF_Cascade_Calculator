@@ -1,14 +1,16 @@
-# -*-coding:utf-8-*-
-
-from PyQt5.QtWidgets import QFileDialog, qApp, QAction, QMainWindow, QApplication, QWidget, QTableWidget, QVBoxLayout, QComboBox, QTableWidgetItem, QPushButton
-from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import QThread, pyqtSignal, Qt
-import about
+import math
 import pickle
+import sqlite3
 import sys
 import time
-import sqlite3
-import math
+
+from PyQt5.QtCore import Qt, QThread, pyqtSignal
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import (QAction, QApplication, QComboBox, QFileDialog,
+                             QMainWindow, QPushButton, QTableWidget,
+                             QTableWidgetItem, QVBoxLayout, QWidget, qApp)
+
+import about
 
 
 class MyTable(QMainWindow):
@@ -21,14 +23,14 @@ class MyTable(QMainWindow):
         self.cursor.execute("select type from component")
         self.types = self.cursor.fetchall()
         self.types = [x[0] for x in set(self.types)]
-        self.initUI()
+        self.init_ui()
 
-    def initUI(self, colc=8):
+    def init_ui(self, colc=8):
         self.colc = colc
         self.setGeometry(200, 100, 900, 600)
         self.setWindowTitle('RF_cas_cal tool')
 
-        compoundWidget = QWidget()
+        compound_widget = QWidget()
         self.table1 = QTableWidget()
         self.table2 = QTableWidget()
         # self.table2.resize(50,50)  #设置表格尺寸
@@ -50,8 +52,8 @@ class MyTable(QMainWindow):
         vbox.addWidget(self.table2)
         vbox.setStretchFactor(self.table1, 2)
         vbox.setStretchFactor(self.table2, 1)
-        compoundWidget.setLayout(vbox)
-        self.setCentralWidget(compoundWidget)
+        compound_widget.setLayout(vbox)
+        self.setCentralWidget(compound_widget)
 
         self.settableHeader()
         self.inputrow_class(self.colc)
@@ -68,58 +70,55 @@ class MyTable(QMainWindow):
         self.editsheet_value_gain_nf()
         self.buttun_edit()
         self.settableHeaderVisible()
-        # self.table1.itemtextchanged()
-        # self.table1.settableSelectMode()
         # self.settableHeaderFontColor()
         # self.setCellFontColor()
         # self.setCellAlign()
         # self.setCellFontSize()
         # self.setCellFontColor()
         # self.setCellSpan()
-        # self.addcolColumn()
 
         # layout = QHBoxLayout()
         # layout.addWidget(MyTable)
         # self.setLayout(layout)
 
-        exitAction = QAction(
-            QIcon('F:\Python\PyQt5\MenusAndToolbar\images\exit.png'), '&退出', self)
-        exitAction.setShortcut('Ctrl+Q')
-        exitAction.setStatusTip('退出应用程序')
-        exitAction.triggered.connect(qApp.quit)
+        exit_action = QAction(
+            QIcon('F:\\Python\\PyQt5\\MenusAndToolbar\\images\\exit.png'), '&退出', self)
+        exit_action.setShortcut('Ctrl+Q')
+        exit_action.setStatusTip('退出应用程序')
+        exit_action.triggered.connect(qApp.quit)
 
         # 载入配置Action设置
-        OpenFileAction = QAction(QIcon('2.png'), '&载入配置', self)
-        OpenFileAction.setShortcut('ctrl+O')
-        OpenFileAction.setStatusTip('载入配置')
-        OpenFileAction.triggered.connect(self.funOpenFile)
+        open_file_action = QAction(QIcon('2.png'), '&载入配置', self)
+        open_file_action.setShortcut('ctrl+O')
+        open_file_action.setStatusTip('载入配置')
+        open_file_action.triggered.connect(self.fun_open_file)
         self.statusBar()
         # 保存配置Action设置
-        SaveFileAction = QAction(QIcon('2.png'), '&保存配置', self)
-        SaveFileAction.setShortcut('ctrl+S')
-        SaveFileAction.setStatusTip('保存配置')
-        SaveFileAction.triggered.connect(self.funSaveFile)
+        save_file_action = QAction(QIcon('2.png'), '&保存配置', self)
+        save_file_action.setShortcut('ctrl+S')
+        save_file_action.setStatusTip('保存配置')
+        save_file_action.triggered.connect(self.fun_save_file)
         self.statusBar()
         # 关于Action设置
-        AboutAction = QAction(QIcon('2.png'), '&关于', self)
+        about_action = QAction(QIcon('2.png'), '&关于', self)
         # AboutAction.setShortcut('ctrl+S')
-        AboutAction.setStatusTip('关于')
-        AboutAction.triggered.connect(self.funabout)
+        about_action.setStatusTip('关于')
+        about_action.triggered.connect(self.funabout)
         self.statusBar()
 
         # menuBar设置
         menubar = self.menuBar()
-        fileMenu = menubar.addMenu('&文件')
-        fileMenu.addAction(OpenFileAction)
-        fileMenu.addAction(SaveFileAction)
-        fileMenu.addAction(exitAction)
-        fileMenu = menubar.addMenu('&帮助')
-        fileMenu.addAction(AboutAction)
+        file_menu = menubar.addMenu('&文件')
+        file_menu.addAction(open_file_action)
+        file_menu.addAction(save_file_action)
+        file_menu.addAction(exit_action)
+        file_menu = menubar.addMenu('&帮助')
+        file_menu.addAction(about_action)
 
         self.table1.itemChanged.connect(self.table1_item_textchanged)
         self.table2.itemChanged.connect(self.table2_item_textchanged)
 
-    def funOpenFile(self):
+    def fun_open_file(self):
         fname = QFileDialog.getOpenFileName(
             self, '载入配置', 'untitled.ca', '*.ca')
         if fname[0]:
@@ -135,14 +134,14 @@ class MyTable(QMainWindow):
                     else:
                         self.table1.cellWidget(row, col).insertItem(
                             10000, save_items[n])
-                        maxCount = self.table1.cellWidget(row, col).count()
-                        print(maxCount)
+                        max_count = self.table1.cellWidget(row, col).count()
+                        print(max_count)
                         self.table1.cellWidget(
-                            row, col).setCurrentIndex(maxCount-1)
+                            row, col).setCurrentIndex(max_count-1)
                     n = n + 1
         self.statusBar().showMessage('载入成功')
 
-    def funSaveFile(self):
+    def fun_save_file(self):
         save_items = []
         for row in range(3):
             for col in range(self.colc):
@@ -169,8 +168,7 @@ class MyTable(QMainWindow):
 
     def table1_item_textchanged(self, item):
         row = item.row()
-        col = item.column()
-        Text = item.text()
+        textm.text()
         if row == 4 or row == 5:
             if self.is_num(Text):
                 self.inputrow7_8(self.colc)
@@ -190,7 +188,7 @@ class MyTable(QMainWindow):
         #             save_items.append(save_item)
 
         #     self.colc = int(item.text())
-        #     self.initUI(self.colc)
+        #     self.init_ui(self.colc)
         #     n = 0
         #     for col in range(self.colc):
         #         for row in range(3):
@@ -264,7 +262,7 @@ class MyTable(QMainWindow):
             self.comBox.setProperty('col', i)
             self.table1.setCellWidget(0, i, self.comBox)
             self.comBox.currentTextChanged.connect(
-                lambda: self.Combo_textchanged())
+                self.Combo_textchanged)
 
     def inputrow_model(self, n, index=None):
         for i in range(n):  # 如果变化的数据是某一列，只更新该列数据
@@ -284,7 +282,7 @@ class MyTable(QMainWindow):
             self.comBox.setProperty('col', i)
             self.table1.setCellWidget(1, i, self.comBox)
             self.comBox.currentTextChanged.connect(
-                lambda: self.Combo_textchanged())
+                self.Combo_textchanged)
 
     def inputrow_frq(self, n, index=None):
         for i in range(n):
@@ -305,7 +303,7 @@ class MyTable(QMainWindow):
             self.comBox.setProperty('col', i)
             self.table1.setCellWidget(2, i, self.comBox)
             self.comBox.currentTextChanged.connect(
-                lambda: self.Combo_textchanged())
+                self.Combo_textchanged)
 
             # 初始化3，4行
     def inputrow4_5(self, n, index=None):
@@ -395,7 +393,7 @@ class MyTable(QMainWindow):
         comBox.setProperty('col', 0)
         self.table2.setCellWidget(3, 0, comBox)
         comBox.currentTextChanged.connect(
-            lambda: self.editsheet_Combo_textchanged())
+            self.editsheet_Combo_textchanged)
 
     def editsheet_value_model(self):
         current_value = self.table2.cellWidget(3, 0).currentText()  # 获取类型
@@ -410,7 +408,7 @@ class MyTable(QMainWindow):
         comBox.setProperty('col', 1)
         self.table2.setCellWidget(3, 1, comBox)
         comBox.currentTextChanged.connect(
-            lambda: self.editsheet_Combo_textchanged())
+            self.editsheet_Combo_textchanged)
 
     def editsheet_value_frq(self):
         current_type = self.table2.cellWidget(3, 0).currentText()
@@ -426,7 +424,7 @@ class MyTable(QMainWindow):
         comBox.setProperty('col', 2)
         self.table2.setCellWidget(3, 2, comBox)
         comBox.currentTextChanged.connect(
-            lambda: self.editsheet_Combo_textchanged())
+            self.editsheet_Combo_textchanged)
 
         # 初始化3，4行
     def editsheet_value_gain_nf(self):
@@ -472,7 +470,6 @@ class MyTable(QMainWindow):
 
     def editsheet_Combo_textchanged(self):
         combo = self.sender()
-        row = combo.property('row')
         col = combo.property('col')
         if col == 0:
             self.editsheet_value_model()
