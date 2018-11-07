@@ -1,13 +1,14 @@
 #-*-coding:utf-8-*-
 
-from PyQt5.QtWidgets import qApp,QAction,QMainWindow,QApplication,QWidget,QTableWidget,QVBoxLayout,QComboBox,QTableWidgetItem,QPushButton
+from PyQt5.QtWidgets import QFileDialog,qApp,QAction,QMainWindow,QApplication,QWidget,QTableWidget,QVBoxLayout,QComboBox,QTableWidgetItem,QPushButton
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import QThread,pyqtSignal,Qt
+import about
+import pickle
 import sys
 import time
 import sqlite3
 import math
-
 class MyTable(QMainWindow):
 
     def __init__(self):
@@ -23,7 +24,7 @@ class MyTable(QMainWindow):
 
     def initUI(self):
         self.setGeometry(200, 100, 900, 600)        
-        self.setWindowTitle('状态栏')  
+        self.setWindowTitle('RF_cas_cal tool')  
 
         compoundWidget = QWidget()
         self.table1 = QTableWidget()
@@ -85,13 +86,75 @@ class MyTable(QMainWindow):
         exitAction.setShortcut('Ctrl+Q')
         exitAction.setStatusTip('退出应用程序')
         exitAction.triggered.connect(qApp.quit)
+
+        # 载入配置Action设置
+        OpenFileAction = QAction(QIcon('2.png'), '&载入配置', self)
+        OpenFileAction.setShortcut('ctrl+O')
+        OpenFileAction.setStatusTip('载入配置')
+        OpenFileAction.triggered.connect(self.funOpenFile)
         self.statusBar()
+        # 保存配置Action设置
+        SaveFileAction = QAction(QIcon('2.png'), '&保存配置', self)
+        SaveFileAction.setShortcut('ctrl+S')
+        SaveFileAction.setStatusTip('保存配置')
+        SaveFileAction.triggered.connect(self.funSaveFile)
+        self.statusBar()
+        # 关于Action设置
+        AboutAction = QAction(QIcon('2.png'), '&关于', self)
+        # AboutAction.setShortcut('ctrl+S')
+        AboutAction.setStatusTip('关于')
+        AboutAction.triggered.connect(self.funabout)
+        self.statusBar()
+
+        # menuBar设置
         menubar = self.menuBar()
         fileMenu = menubar.addMenu('&文件')
+        fileMenu.addAction(OpenFileAction)
+        fileMenu.addAction(SaveFileAction)
         fileMenu.addAction(exitAction)
+        fileMenu = menubar.addMenu('&帮助')
+        fileMenu.addAction(AboutAction)
+
 
         self.table1.itemChanged.connect(self.table1_item_textchanged) 
         self.table2.itemChanged.connect(self.table2_item_textchanged) 
+    def funOpenFile(self):
+        fname = QFileDialog.getOpenFileName(self, '载入配置', 'untitled.ca', '*.ca')
+        if fname[0]:
+            with open(fname[0], 'rb') as file:
+                save_items = pickle.load(file)
+            n = 0
+            for row in range(3):
+                for col in range(self.colc):
+                    index = self.table1.cellWidget(row,col).findText(save_items[n])
+                    if index != -1:
+                        self.table1.cellWidget(row,col).setCurrentIndex (index)
+                    else:
+                        self.table1.cellWidget(row,col).insertItem(10000,save_items[n])
+                        maxCount =self.table1.cellWidget(row,col).count()
+                        print(maxCount) 
+                        self.table1.cellWidget(row,col).setCurrentIndex(maxCount-1)
+                    n = n + 1
+        self.statusBar().showMessage('载入成功')
+
+
+    def funSaveFile(self):
+        save_items = []
+        for row in range(3):
+            for col in range(self.colc):
+                save_item = self.table1.cellWidget(row,col).currentText()
+                save_items.append(save_item)
+        fname = QFileDialog.getSaveFileName(self, '保存配置', 'untitled', '*.ca')
+        if fname[0] == '':
+            return False
+        with open(fname[0],'wb') as file:
+            pickle.dump(save_items,file,-1)
+        self.statusBar().showMessage('保存成功')
+
+    def funabout(self):
+        self.about1 = about.about()
+        self.about1.show()
+
     def is_num(self, str_):
         try:
             float(str_)
@@ -157,11 +220,15 @@ class MyTable(QMainWindow):
             self.comBox.setProperty('row', 0)
             self.comBox.setProperty('col',i)
             self.table1.setCellWidget(0,i,self.comBox)
-            self.comBox.currentTextChanged.connect(lambda:self.Combo_textchanged(0,i))
+            self.comBox.currentTextChanged.connect(lambda:self.Combo_textchanged())
 
 
-    def inputrow_model(self,n):
-        for i in range(n):
+    def inputrow_model(self,n,index = None):
+        for i in range(n):      #如果变化的数据是某一列，只更新该列数据
+            if index:
+                if i != index:
+                    print(index)
+                    continue
             current_value = self.table1.cellWidget(0,i).currentText()   
             self.cursor.execute("select model from component where type=?",(current_value,))
             self.models = self.cursor.fetchall()
@@ -172,10 +239,14 @@ class MyTable(QMainWindow):
             self.comBox.setProperty('row', 1)
             self.comBox.setProperty('col',i)
             self.table1.setCellWidget(1,i,self.comBox)
-            self.comBox.currentTextChanged.connect(lambda:self.Combo_textchanged(1,i))
+            self.comBox.currentTextChanged.connect(lambda:self.Combo_textchanged())
 
-    def inputrow_frq(self,n):        
+    def inputrow_frq(self,n,index = None):
         for i in range(n):
+            if index:
+                if i != index:
+                    print(index)
+                    continue
             current_type = self.table1.cellWidget(0,i).currentText()   
             current_model = self.table1.cellWidget(1,i).currentText()   
             self.cursor.execute("select frq from component where type=? and model =?",(current_type,current_model))
@@ -187,18 +258,24 @@ class MyTable(QMainWindow):
             self.comBox.setProperty('row', 2)
             self.comBox.setProperty('col',i)
             self.table1.setCellWidget(2,i,self.comBox)    
-            self.comBox.currentTextChanged.connect(lambda:self.Combo_textchanged(2,i))
+            self.comBox.currentTextChanged.connect(lambda:self.Combo_textchanged())
 
             #初始化3，4行
-    def inputrow4_5(self,n):    
+    def inputrow4_5(self,n,index = None):    
         for i in range(n):
+            if index:
+                if i != index:
+                    print(index)
+                    continue
             current_type = self.table1.cellWidget(0,i).currentText()   
             current_model = self.table1.cellWidget(1,i).currentText()   
             current_frq = self.table1.cellWidget(2,i).currentText()   
             self.cursor.execute("select gain from component where type=? and model =? and frq =?",(current_type,current_model,current_frq))
             self.gain=self.cursor.fetchall()
             if self.gain == []:
-                return False
+                self.table1.setItem(4,i,QTableWidgetItem(str(0)))
+                self.table1.setItem(5,i,QTableWidgetItem(str(0)))
+                continue
             self.gain = self.gain[0][0]
             self.cursor.execute("select nf from component where type=? and model =? and frq =?",(current_type,current_model,current_frq))
             self.nf = self.cursor.fetchall()[0][0]
@@ -215,6 +292,7 @@ class MyTable(QMainWindow):
                     return False
                 totalgain = float(self.table1.item(4,i).text()) + float(self.table1.item(7,i-1).text()) 
                 totalnf = 10*math.log10(10**(float(self.table1.item(8,i-1).text())/10)+(10**(float(self.table1.item(5,i).text())/10)-1)/10**(float(self.table1.item(7,i-1).text())/10))  
+                totalnf = round(totalnf,1)
             self.table1.setItem(7,i,QTableWidgetItem(str(totalgain)))
             self.table1.item(7,i).setFlags(Qt.ItemIsEnabled)
             self.table1.setItem(8,i,QTableWidgetItem(str(totalnf)))
@@ -239,6 +317,7 @@ class MyTable(QMainWindow):
         NF = float(self.table1.item(8,n-1).text())
         SNR = float(self.table2.item(1,2).text())
         sens = 10*math.log10(K*T*BW) + NF + SNR
+        sens = round(sens,2)
         self.table2.setItem(1,3,QTableWidgetItem(str(sens)))
         self.table2.item(1,3).setFlags(Qt.ItemIsEnabled)
 
@@ -310,24 +389,21 @@ class MyTable(QMainWindow):
         butten_add.clicked.connect(self.add_component)
 
 
-    def Combo_textchanged(self,row,col):
+    def Combo_textchanged(self):
         combo = self.sender()
         row = combo.property('row')
         col = combo.property('col')
         if row == 0:
-            self.inputrow_model(self.colc)
-            self.inputrow_frq(self.colc)
-            if self.inputrow4_5(self.colc):
-                return
+            self.inputrow_model(self.colc,col)
+            self.inputrow_frq(self.colc,col)
+            self.inputrow4_5(self.colc,col)
             self.inputrow7_8(self.colc)
         elif row == 1:
-            self.inputrow_frq(self.colc)
-            if self.inputrow4_5(self.colc):
-                return
+            self.inputrow_frq(self.colc,col)
+            self.inputrow4_5(self.colc,col)
             self.inputrow7_8(self.colc)
         elif row == 2:
-            if self.inputrow4_5(self.colc):
-                return
+            self.inputrow4_5(self.colc,col)
             self.inputrow7_8(self.colc)
     def editsheet_Combo_textchanged(self):
         combo = self.sender()
@@ -595,6 +671,7 @@ class MyTable(QMainWindow):
     def update_item_data(self, data):
         """更新内容"""
         self.table1.setItem(0, 0, QTableWidgetItem(data))  # 设置表格内容(行， 列) 文字
+
 
 class UpdateData(QThread):
     """更新数据类"""

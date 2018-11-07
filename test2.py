@@ -2,6 +2,7 @@
 
 import sys
 from PyQt5.QtWidgets import (QMainWindow,QTableWidget,QWidget, QPushButton, QApplication, QHBoxLayout, QVBoxLayout)
+import about
 
 class Example(QMainWindow):
     def __init__(self):
