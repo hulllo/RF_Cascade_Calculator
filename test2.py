@@ -1,46 +1,65 @@
-#coding = 'utf-8'
+#-*- coding:utf-8 -*-
+'''
+PushButton
+'''
+__author__ = 'Tony Zhu'
 
+from PyQt5.QtWidgets import QApplication, QWidget, QPushButton,QMenu,QAction
+from PyQt5.QtGui import QIcon,QCursor
+from PyQt5.QtCore import Qt,QPoint
 import sys
-from PyQt5.QtWidgets import (QMainWindow,QTableWidget,QWidget, QPushButton, QApplication, QHBoxLayout, QVBoxLayout)
-import about
 
-class Example(QMainWindow):
+class PushButton(QWidget):
     def __init__(self):
-        super().__init__()
-        self.Init_UI()
-    def Init_UI(self):
-        compoundWidget = QWidget()
+        super(PushButton,self).__init__()
+        self.initUI()
+    def initUI(self):
+        self.setWindowTitle("PushButton")
+        self.setGeometry(400,400,300,260)
 
-        table = QTableWidget()
-        table.setColumnCount(6)
-        table.setRowCount(11)
+        self.closeButton = QPushButton(self)
+        self.closeButton.setText("Close")          #text
+        self.closeButton.setIcon(QIcon("close.png")) #icon
+        self.closeButton.setShortcut('Ctrl+D')  #shortcut key
+        self.closeButton.clicked.connect(self.close)
+        self.closeButton.setToolTip("Close the widget") #Tool tip
+        self.closeButton.move(100,100)
 
-        layout = QVBoxLayout()
-        layout.addWidget(QPushButton("Widget1"))
-        layout.addWidget(QPushButton("Widget2"))
-        layout.addWidget(table)
-        compoundWidget.setLayout(layout)
-        self.setCentralWidget(compoundWidget)
+        self.closeButton.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.closeButton.customContextMenuRequested[QPoint].connect(self.myListWidgetContext)
 
+    def myListWidgetContext(self):
+        popMenu = QMenu()
+        popMenu.addAction(QAction(u'字体放大', self))
+        popMenu.addAction(QAction(u'字体减小', self))
+        popMenu.triggered[QAction].connect(self.processtrigger)
+        popMenu.exec_(QCursor.pos())
 
-        self.setGeometry(300,300,400,300)
-        self.setWindowTitle('学点编程吧')
+    #右键按钮事件
+    def processtrigger(self, q):
+        # text = self.newTextEdit.toPlainText()
+        # if not text.strip():
+        #     return
+        # 输出那个Qmenu对象被点击
+        if q.text() == "字体放大":
+            self.fontSize += 1
+        elif q.text() == "字体减小":
+            self.fontSize -= 1
 
+    # def contextMenuEvent(self, event):
 
-        # hbox = QHBoxLayout()
-        # hbox.addStretch(1)
-        # hbox.addWidget(bt1)
-        # hbox.addWidget(bt2)
-        # hbox.addWidget(bt3)
+    #    cmenu = QMenu(self)
 
-        # vbox = QVBoxLayout()
-        # vbox.addStretch(1)
-        # vbox.addLayout(hbox)
+    #    newAct = cmenu.addAction("新建")
+    #    opnAct = cmenu.addAction("保存")
+    #    quitAct = cmenu.addAction("退出")
+    #    action = cmenu.exec_(self.mapToGlobal(event.pos()))
+    #    print(event.pos())
+    #    if action == quitAct:
+    #        qApp.quit()
 
-        # self.setLayout(vbox)
-
-        self.show()
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    ex = Example()
-    app.exit(app.exec_())
+    ex = PushButton()
+    ex.show()
+    sys.exit(app.exec_()) 
