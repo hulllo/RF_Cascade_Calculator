@@ -13,7 +13,7 @@ from PyQt5.QtWidgets import (QAction, QApplication, QComboBox, QFileDialog,
 import about
 
 
-class MyTable(QMainWindow):
+class Main_windows(QMainWindow):
 
     def __init__(self):
         super().__init__()
@@ -57,6 +57,8 @@ class MyTable(QMainWindow):
         self.setCentralWidget(compound_widget)
 
         self.settableHeader()
+        self.settableHeaderVisible()
+
         self.inputrow_class(self.colc)
         self.inputrow_model(self.colc)
         self.inputrow_frq(self.colc)
@@ -70,7 +72,6 @@ class MyTable(QMainWindow):
         self.editsheet_value_frq()
         self.editsheet_value_gain_nf()
         self.buttun_edit()
-        self.settableHeaderVisible()
         # self.settableHeaderFontColor()
         # self.setCellFontColor()
         # self.setCellAlign()
@@ -111,14 +112,9 @@ class MyTable(QMainWindow):
         about_action = QAction(QIcon('2.png'), '&关于', self)
         # AboutAction.setShortcut('ctrl+S')
         about_action.setStatusTip('关于')
-        about_action.triggered.connect(self.funabout)
+        about_action.triggered.connect(self.fun_about)
         self.statusBar()
 
-        # 图示Action设置
-        graphics_view_action = QAction(QIcon('2.png'), '&图示', self)
-        graphics_view_action.setStatusTip('图示')
-        graphics_view_action.triggered.connect(self.graphics_view)
-        self.statusBar()
 
         # menuBar设置
         menubar = self.menuBar()
@@ -126,20 +122,10 @@ class MyTable(QMainWindow):
         file_menu.addAction(open_file_action)
         file_menu.addAction(save_file_action)
         file_menu.addAction(exit_action)
-        file_menu = menubar.addMenu('&视图')
-        # file_menu.addAction(graphics_view_action)
         file_menu = menubar.addMenu('&帮助')
         file_menu.addAction(about_action)
 
-    def graphics_view(self):
-        datas = []
-        for col in range(self.colc):
-            data = self.table1.item(7,col).text()
-            datas.append(float(data))
-        x = list(range(self.colc))
-        plt.plot(x,datas,'-o')  
-        plt.show()  
-        pass
+ 
     def fun_open_file(self):
         fname = QFileDialog.getOpenFileName(
             self, '载入配置', 'untitled.ca', '*.ca')
@@ -153,7 +139,7 @@ class MyTable(QMainWindow):
         self.statusBar().showMessage('载入成功')
 
     def fun_save_file(self):
-        data = self.savedata()   
+        data = self.save_data()   
         fname = QFileDialog.getSaveFileName(self, '保存配置', 'untitled', '*.ca')
         if fname[0] == '':
             return False
@@ -161,7 +147,7 @@ class MyTable(QMainWindow):
             pickle.dump(data, file, -1)
         self.statusBar().showMessage('保存成功')
 
-    def funabout(self):
+    def fun_about(self):
         self.about1 = about.about()
         self.about1.show()
 
@@ -173,7 +159,7 @@ class MyTable(QMainWindow):
             return False
     # 表格文字变化处理函数
 
-    def savedata(self):
+    def save_data(self):
         save_items = []
         #保存当前数据
         for col in range(self.colc):
@@ -199,7 +185,7 @@ class MyTable(QMainWindow):
     def table2_item_textchanged(self, item):
         item_text = item.text()
         if item.column() == 4:
-            data = self.savedata()
+            data = self.save_data()
             if self.is_num(item.text()):
                 self.colc = int(item.text())   #设置级数
                 self.init_ui(self.colc)
@@ -617,47 +603,47 @@ class MyTable(QMainWindow):
     # ===4:表格的其他相关属性设置
     """设置表格是否可编辑"""
 
-    def settableEditTrigger(self):
-        """使用格式说明：
-                在默认情况下，表格里的字符是可以更改的，
-                比如双击一个单元格，就可以修改原来的内容，
-                如果想禁止用户的这种操作，让这个表格对用户只读，可以这样：
-           QAbstractItemView.NoEditTriggers和QAbstractItemView.EditTrigger枚举中的一个，
-           都是触发修改单元格内容的条件：
-            QAbstractItemView.NoEditTriggers    0   No editing possible. 不能对表格内容进行修改
-            QAbstractItemView.CurrentChanged    1   Editing start whenever current item changes.任何时候都能对单元格修改
-            QAbstractItemView.DoubleClicked     2   Editing starts when an item is double clicked.双击单元格
-            QAbstractItemView.SelectedClicked   4   Editing starts when clicking on an already selected item.单击已选中的内容
-            QAbstractItemView.EditKeyPressed    8   Editing starts when the platform edit key has been pressed over an item.
-            QAbstractItemView.AnyKeyPressed     16  Editing starts when any key is pressed over an item.按下任意键就能修改
-            QAbstractItemView.AllEditTriggers   31  Editing starts for all above actions.以上条件全包括
-        """
-        self.setEditTriggers(QAbstractItemView.NoEditTriggers)
+    # def settableEditTrigger(self):
+    #     """使用格式说明：
+    #             在默认情况下，表格里的字符是可以更改的，
+    #             比如双击一个单元格，就可以修改原来的内容，
+    #             如果想禁止用户的这种操作，让这个表格对用户只读，可以这样：
+    #        QAbstractItemView.NoEditTriggers和QAbstractItemView.EditTrigger枚举中的一个，
+    #        都是触发修改单元格内容的条件：
+    #         QAbstractItemView.NoEditTriggers    0   No editing possible. 不能对表格内容进行修改
+    #         QAbstractItemView.CurrentChanged    1   Editing start whenever current item changes.任何时候都能对单元格修改
+    #         QAbstractItemView.DoubleClicked     2   Editing starts when an item is double clicked.双击单元格
+    #         QAbstractItemView.SelectedClicked   4   Editing starts when clicking on an already selected item.单击已选中的内容
+    #         QAbstractItemView.EditKeyPressed    8   Editing starts when the platform edit key has been pressed over an item.
+    #         QAbstractItemView.AnyKeyPressed     16  Editing starts when any key is pressed over an item.按下任意键就能修改
+    #         QAbstractItemView.AllEditTriggers   31  Editing starts for all above actions.以上条件全包括
+    #     """
+    #     self.setEditTriggers(QAbstractItemView.NoEditTriggers)
     """设置表格为整行选择"""
 
-    def settableSelect(self):
-        """
-        QAbstractItemView.SelectionBehavior枚举还有如下类型
-        Constant                      Value        Description
-        QAbstractItemView.SelectItems   0   Selecting single items.选中单个单元格
-        QAbstractItemView.SelectRows    1   Selecting only rows.选中一行
-        QAbstractItemView.SelectColumns 2   Selecting only columns.选中一列
-        """
-        self.setSelectionBehavior(QAbstractItemView.SelectRows)
+    # def settableSelect(self):
+        # """
+        # QAbstractItemView.SelectionBehavior枚举还有如下类型
+        # Constant                      Value        Description
+        # QAbstractItemView.SelectItems   0   Selecting single items.选中单个单元格
+        # QAbstractItemView.SelectRows    1   Selecting only rows.选中一行
+        # QAbstractItemView.SelectColumns 2   Selecting only columns.选中一列
+        # """
+        # self.setSelectionBehavior(QAbstractItemView.SelectRows)
     """单个选中和多个选中的设置"""
 
-    def settableSelectMode(self):
-        """
-        setSelectionMode(QAbstractItemView.ExtendedSelection)  #设置为可以选中多个目标
-        该函数的参数还可以是：
-        QAbstractItemView.NoSelection      不能选择
-        QAbstractItemView.SingleSelection  选中单个目标
-        QAbstractItemView.MultiSelection    选中多个目标
-        QAbstractItemView.ExtendedSelection和ContiguousSelection
-        的区别不明显，要功能是正常情况下是单选，但按下Ctrl或Shift键后，可以多选
-        :return:
-        """
-        self.setSelectionMode(QAbstractItemView.ExtendedSelection)
+    # def settableSelectMode(self):
+    #     """
+    #     setSelectionMode(QAbstractItemView.ExtendedSelection)  #设置为可以选中多个目标
+    #     该函数的参数还可以是：
+    #     QAbstractItemView.NoSelection      不能选择
+    #     QAbstractItemView.SingleSelection  选中单个目标
+    #     QAbstractItemView.MultiSelection    选中多个目标
+    #     QAbstractItemView.ExtendedSelection和ContiguousSelection
+    #     的区别不明显，要功能是正常情况下是单选，但按下Ctrl或Shift键后，可以多选
+    #     :return:
+    #     """
+    #     self.setSelectionMode(QAbstractItemView.ExtendedSelection)
     """表头显示与隐藏"""
 
     def settableHeaderVisible(self):
@@ -670,53 +656,53 @@ class MyTable(QMainWindow):
         self.table2.horizontalHeader().setVisible(False)
     """对表头文字的字体、颜色进行设置"""
 
-    def settableHeaderFontColor(self):
-        """
-        PyQt5中没有如下设置背景颜色和字体颜色函数
-        headItem.setBackgroundColor(QColor(c))  # 设置单元格背景颜色
-        headItem.setTextColor(QColor(200, 111, 30))  # 设置文字颜色
-        :return:
-        有（设置字体颜色）：
-        headItem.setForeground(QBrush(Qt.red))
-        headItem.setForeground(QBrush(QColor(128,255,0)))
-        """
-        f, ok = QFontDialog.getFont()
+    # def settableHeaderFontColor(self):
+    #     """
+    #     PyQt5中没有如下设置背景颜色和字体颜色函数
+    #     headItem.setBackgroundColor(QColor(c))  # 设置单元格背景颜色
+    #     headItem.setTextColor(QColor(200, 111, 30))  # 设置文字颜色
+    #     :return:
+    #     有（设置字体颜色）：
+    #     headItem.setForeground(QBrush(Qt.red))
+    #     headItem.setForeground(QBrush(QColor(128,255,0)))
+    #     """
+    #     f, ok = QFontDialog.getFont()
 
-        for x in range(self.columnCount()):
-            headItem = self.horizontalHeaderItem(x)  # 获得水平方向表头的Item对象
-            # headItem.setFont(QFont("song",12,QFont.Bold))
-            if ok:
-                headItem.setFont(f)  # 设置字体
-            # 设置表头字体颜色
-            # headItem.setForeground(QBrush(Qt.red))
-            headItem.setForeground(QBrush(QColor(128, 255, 0)))
+    #     for x in range(self.columnCount()):
+    #         headItem = self.horizontalHeaderItem(x)  # 获得水平方向表头的Item对象
+    #         # headItem.setFont(QFont("song",12,QFont.Bold))
+    #         if ok:
+    #             headItem.setFont(f)  # 设置字体
+    #         # 设置表头字体颜色
+    #         # headItem.setForeground(QBrush(Qt.red))
+    #         headItem.setForeground(QBrush(QColor(128, 255, 0)))
 
-            headItem.setTextAlignment(Qt.AlignLeft)
+    #         headItem.setTextAlignment(Qt.AlignLeft)
 
-    def settableproperty(self):
-        # 4.2 选中表格中的某一行
-        self.setSelectionBehavior(QAbstractItemView.SelectRows)
+    # def settableproperty(self):
+    #     # 4.2 选中表格中的某一行
+    #     self.setSelectionBehavior(QAbstractItemView.SelectRows)
     """动态插入行列 """
 
-    def addcolColumn(self):
-        """当初始的行数或者列数不能满足需要的时候，
-        我们需要动态的调整表格的大小，如入动态的插入行：
-        insertColumn()动态插入列。
-        insertRow(int)、
-        insertColumn(int)，指定位置插入行或者列
-        """
-        colcount = self.colCount()
-        self.insertRow(colcount)
+    # def addcolColumn(self):
+    #     """当初始的行数或者列数不能满足需要的时候，
+    #     我们需要动态的调整表格的大小，如入动态的插入行：
+    #     insertColumn()动态插入列。
+    #     insertRow(int)、
+    #     insertColumn(int)，指定位置插入行或者列
+    #     """
+    #     colcount = self.colCount()
+    #     self.insertRow(colcount)
     """动态移除行列 """
 
-    def removecolColumn(self):
-        """
-        removeColumn(int column) 移除column列及其内容。
-        removeRow(int row)移除第row行及其内容。
-        :return:
-        """
-        colcount = self.colCount()
-        self.removeRow(colcount-1)
+    # def removecolColumn(self):
+    #     """
+    #     removeColumn(int column) 移除column列及其内容。
+    #     removeRow(int row)移除第row行及其内容。
+    #     :return:
+    #     """
+    #     colcount = self.colCount()
+    #     self.removeRow(colcount-1)
     # =========第2部分：对单元格的进行设置=============
     """1.单元格设置字体颜色和背景颜色"""
     """2.设置单元格中的字体和字符大小"""
@@ -725,81 +711,81 @@ class MyTable(QMainWindow):
     """5.设置单元格的大小(见settableSize()函数)"""
     """6 单元格Flag的实现"""
 
-    def setCellFontColor(self):
-        newItem = self.table1.item(0, 1)
-        newItem.setBackground(Qt.red)
-        #newItem.setBackground(QColor(0, 250, 10))
-        # newItem.(QColor(200, 111, 100))
+    # def setCellFontColor(self):
+    #     newItem = self.table1.item(0, 1)
+    #     newItem.setBackground(Qt.red)
+    #     #newItem.setBackground(QColor(0, 250, 10))
+    #     # newItem.(QColor(200, 111, 100))
 
-    def setCellFontSize(self):
-        """
-        首先，先生成一个字体QFont对象，并将其字体设为宋体，大小设为12，并且加粗
-        再利用单元格的QTableWidgetItem类中的setFont加载给特定的单元格。
-        如果需要对所有的单元格都使用这种字体，则可以使用
-        self.MyTable.setFont(testFont)
-        #利用QTableWidget类中的setFont成员函数，将所有的单元格都设成该字体
-        :return:
-        """
-        textFont = QFont("song", 12, QFont.Bold)
+    # def setCellFontSize(self):
+    #     """
+    #     首先，先生成一个字体QFont对象，并将其字体设为宋体，大小设为12，并且加粗
+    #     再利用单元格的QTableWidgetItem类中的setFont加载给特定的单元格。
+    #     如果需要对所有的单元格都使用这种字体，则可以使用
+    #     self.MyTable.setFont(testFont)
+    #     #利用QTableWidget类中的setFont成员函数，将所有的单元格都设成该字体
+    #     :return:
+    #     """
+    #     textFont = QFont("song", 12, QFont.Bold)
 
-        newItem = QTableWidgetItem("张三")
-        # newItem.setBackgroundColor(QColor(0,60,10))
-        # newItem.setTextColor(QColor(200,111,100))
-        newItem.setFont(textFont)
-        self.table1.setItem(0, 0, newItem)
+    #     newItem = QTableWidgetItem("张三")
+    #     # newItem.setBackgroundColor(QColor(0,60,10))
+    #     # newItem.setTextColor(QColor(200,111,100))
+    #     newItem.setFont(textFont)
+    #     self.table1.setItem(0, 0, newItem)
 
-    def setCellAlign(self):
-        """
-        这个比较简单，使用newItem.setTextAlignment()函数即可，
-        该函数的参数为单元格内的对齐方式，和字符输入顺序是自左相右还是自右向左。
-        水平对齐方式有：
-        Constant         Value  Description
-        Qt.AlignLeft    0x0001  Aligns with the left edge.
-        Qt.AlignRight   0x0002  Aligns with the right edge.
-        Qt.AlignHCenter 0x0004  Centers horizontally in the available space.
-        Qt.AlignJustify 0x0008  Justifies the text in the available space.
-        垂直对齐方式：
-        Constant        Value   Description
-        Qt.AlignTop     0x0020  Aligns with the top.
-        Qt.AlignBottom  0x0040  Aligns with the bottom.
-        Qt.AlignVCenter 0x0080  Centers vertically in the available space.
-        如果两种都要设置，只要用 Qt.AlignHCenter |  Qt.AlignVCenter 的方式即可
-        :return:
-        """
-        newItem = QTableWidgetItem("张三")
-        newItem.setTextAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
-        self.table1.setItem(0, 0, newItem)
+    # def setCellAlign(self):
+    #     """
+    #     这个比较简单，使用newItem.setTextAlignment()函数即可，
+    #     该函数的参数为单元格内的对齐方式，和字符输入顺序是自左相右还是自右向左。
+    #     水平对齐方式有：
+    #     Constant         Value  Description
+    #     Qt.AlignLeft    0x0001  Aligns with the left edge.
+    #     Qt.AlignRight   0x0002  Aligns with the right edge.
+    #     Qt.AlignHCenter 0x0004  Centers horizontally in the available space.
+    #     Qt.AlignJustify 0x0008  Justifies the text in the available space.
+    #     垂直对齐方式：
+    #     Constant        Value   Description
+    #     Qt.AlignTop     0x0020  Aligns with the top.
+    #     Qt.AlignBottom  0x0040  Aligns with the bottom.
+    #     Qt.AlignVCenter 0x0080  Centers vertically in the available space.
+    #     如果两种都要设置，只要用 Qt.AlignHCenter |  Qt.AlignVCenter 的方式即可
+    #     :return:
+    #     """
+    #     newItem = QTableWidgetItem("张三")
+    #     newItem.setTextAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+    #     self.table1.setItem(0, 0, newItem)
 
-    def setCellSpan(self):
-        """
-        self.MyTable.setSpan(0, 0, 3, 1)
-        # 其参数为： 要改变单元格的   1行数  2列数
-        要合并的  3行数  4列数
-        :return:
-        """
-        self.setSpan(0, 0, 3, 1)
+    # def setCellSpan(self):
+    #     """
+    #     self.MyTable.setSpan(0, 0, 3, 1)
+    #     # 其参数为： 要改变单元格的   1行数  2列数
+    #     要合并的  3行数  4列数
+    #     :return:
+    #     """
+    #     self.setSpan(0, 0, 3, 1)
 
-    def update_item_data(self, data):
-        """更新内容"""
-        self.table1.setItem(0, 0, QTableWidgetItem(data))  # 设置表格内容(行， 列) 文字
+    # def update_item_data(self, data):
+    #     """更新内容"""
+    #     self.table1.setItem(0, 0, QTableWidgetItem(data))  # 设置表格内容(行， 列) 文字
 
 
-class UpdateData(QThread):
-    """更新数据类"""
-    update_date = pyqtSignal(str)
+# class UpdateData(QThread):
+#     """更新数据类"""
+#     update_date = pyqtSignal(str)
 
-    def run(self):
-        cnt = 0
-        while True:
-            cnt += 1
-            self.update_date.emit(str(cnt))
-            time.sleep(1)
+#     def run(self):
+#         cnt = 0
+#         while True:
+#             cnt += 1
+#             self.update_date.emit(str(cnt))
+#             time.sleep(1)
 
 
 if __name__ == '__main__':
     # 实例化表格
     app = QApplication(sys.argv)
-    myTable = MyTable()
+    windows = Main_windows()
     # 启动更新线程
     # update_data_thread = UpdateData()
     # update_data_thread.update_date.connect(myTable.update_item_data)  # 链接信号
@@ -812,6 +798,6 @@ if __name__ == '__main__':
     # myTable.move(x, y)  # 移动
 
     # 显示表格
-    myTable.show()
+    windows.show()
 
     app.exit(app.exec_())
