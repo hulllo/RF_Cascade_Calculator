@@ -3,7 +3,7 @@ import pickle
 import sqlite3
 import sys
 import time
-
+import matplotlib.pyplot as plt
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (QAction, QApplication, QComboBox, QFileDialog,
@@ -87,6 +87,8 @@ class MyTable(QMainWindow):
         self.table2.itemChanged.connect(self.table2_item_textchanged)
 
     def init_menubar(self):
+
+        #退出Action设置
         exit_action = QAction(
         QIcon('F:\\Python\\PyQt5\\MenusAndToolbar\\images\\exit.png'), '&退出', self)
         exit_action.setShortcut('Ctrl+Q')
@@ -112,15 +114,32 @@ class MyTable(QMainWindow):
         about_action.triggered.connect(self.funabout)
         self.statusBar()
 
+        # 图示Action设置
+        graphics_view_action = QAction(QIcon('2.png'), '&图示', self)
+        graphics_view_action.setStatusTip('图示')
+        graphics_view_action.triggered.connect(self.graphics_view)
+        self.statusBar()
+
         # menuBar设置
         menubar = self.menuBar()
         file_menu = menubar.addMenu('&文件')
         file_menu.addAction(open_file_action)
         file_menu.addAction(save_file_action)
         file_menu.addAction(exit_action)
+        file_menu = menubar.addMenu('&视图')
+        file_menu.addAction(graphics_view_action)
         file_menu = menubar.addMenu('&帮助')
         file_menu.addAction(about_action)
 
+    def graphics_view(self):
+        datas = []
+        for col in range(self.colc):
+            data = self.table1.item(7,col).text()
+            datas.append(float(data))
+        x = list(range(self.colc))
+        plt.plot(x,datas,'-o')  
+        plt.show()  
+        pass
     def fun_open_file(self):
         fname = QFileDialog.getOpenFileName(
             self, '载入配置', 'untitled.ca', '*.ca')
@@ -181,9 +200,12 @@ class MyTable(QMainWindow):
         item_text = item.text()
         if item.column() == 4:
             data = self.savedata()
-            self.colc = int(item.text())   #设置级数
-            self.init_ui(self.colc)
-            self.load_data(self.colc,data)
+            if self.is_num(item.text()):
+                self.colc = int(item.text())   #设置级数
+                self.init_ui(self.colc)
+                self.load_data(self.colc,data)
+            else:
+                return False
 
 
         elif item.column() != 3:
@@ -192,7 +214,7 @@ class MyTable(QMainWindow):
 
     def load_data(self,col,data):
         save_items= data[:-3]
-        print(save_items)
+        # print(save_items)
         save_setting = data[-3:] 
         n = 0
         for col in range(col):
@@ -346,9 +368,11 @@ class MyTable(QMainWindow):
                     return False
                 totalgain = float(self.table1.item(4, i).text()) + \
                     float(self.table1.item(7, i-1).text())
+                totalgain = round(totalgain, 1)
                 totalnf = 10*math.log10(10**(float(self.table1.item(8, i-1).text())/10)+(10**(float(
                     self.table1.item(5, i).text())/10)-1)/10**(float(self.table1.item(7, i-1).text())/10))
                 totalnf = round(totalnf, 1)
+                
             self.table1.setItem(7, i, QTableWidgetItem(str(totalgain)))
             self.table1.item(7, i).setFlags(Qt.ItemIsEnabled)
             self.table1.setItem(8, i, QTableWidgetItem(str(totalnf)))
