@@ -24,8 +24,9 @@ class MyTable(QMainWindow):
         self.types = self.cursor.fetchall()
         self.types = [x[0] for x in set(self.types)]
         self.init_ui()
+        self.init_menubar()
 
-    def init_ui(self, colc=8):
+    def init_ui(self, colc = 5):
         self.colc = colc
         self.setGeometry(200, 100, 900, 600)
         self.setWindowTitle('RF_cas_cal tool')
@@ -81,8 +82,13 @@ class MyTable(QMainWindow):
         # layout.addWidget(MyTable)
         # self.setLayout(layout)
 
+        
+        self.table1.itemChanged.connect(self.table1_item_textchanged)
+        self.table2.itemChanged.connect(self.table2_item_textchanged)
+
+    def init_menubar(self):
         exit_action = QAction(
-            QIcon('F:\\Python\\PyQt5\\MenusAndToolbar\\images\\exit.png'), '&退出', self)
+        QIcon('F:\\Python\\PyQt5\\MenusAndToolbar\\images\\exit.png'), '&退出', self)
         exit_action.setShortcut('Ctrl+Q')
         exit_action.setStatusTip('退出应用程序')
         exit_action.triggered.connect(qApp.quit)
@@ -115,43 +121,25 @@ class MyTable(QMainWindow):
         file_menu = menubar.addMenu('&帮助')
         file_menu.addAction(about_action)
 
-        self.table1.itemChanged.connect(self.table1_item_textchanged)
-        self.table2.itemChanged.connect(self.table2_item_textchanged)
-
     def fun_open_file(self):
         fname = QFileDialog.getOpenFileName(
             self, '载入配置', 'untitled.ca', '*.ca')
         if fname[0]:
             with open(fname[0], 'rb') as file:
-                save_items = pickle.load(file)
-            n = 0
-            for row in range(3):
-                for col in range(self.colc):
-                    index = self.table1.cellWidget(
-                        row, col).findText(save_items[n])
-                    if index != -1:
-                        self.table1.cellWidget(row, col).setCurrentIndex(index)
-                    else:
-                        self.table1.cellWidget(row, col).insertItem(
-                            10000, save_items[n])
-                        max_count = self.table1.cellWidget(row, col).count()
-                        print(max_count)
-                        self.table1.cellWidget(
-                            row, col).setCurrentIndex(max_count-1)
-                    n = n + 1
+                data = pickle.load(file)
+            self.colc = int(len(data[:-3])/5)
+            self.init_ui(self.colc)
+            self.load_data(self.colc,data)
+
         self.statusBar().showMessage('载入成功')
 
     def fun_save_file(self):
-        save_items = []
-        for row in range(3):
-            for col in range(self.colc):
-                save_item = self.table1.cellWidget(row, col).currentText()
-                save_items.append(save_item)
+        data = self.savedata()   
         fname = QFileDialog.getSaveFileName(self, '保存配置', 'untitled', '*.ca')
         if fname[0] == '':
             return False
         with open(fname[0], 'wb') as file:
-            pickle.dump(save_items, file, -1)
+            pickle.dump(data, file, -1)
         self.statusBar().showMessage('保存成功')
 
     def funabout(self):
@@ -166,54 +154,75 @@ class MyTable(QMainWindow):
             return False
     # 表格文字变化处理函数
 
+    def savedata(self):
+        save_items = []
+        #保存当前数据
+        for col in range(self.colc):
+            for row in range(3):
+                save_item = self.table1.cellWidget(row, col).currentText()
+                save_items.append(save_item)
+            for row in range(4, 6):
+                save_item = self.table1.item(row, col).text()
+                save_items.append(save_item)
+
+        save_setting = [self.table2.item(1,x).text() for x in range(3)]
+        # print(save_setting)
+        return save_items+save_setting
+
     def table1_item_textchanged(self, item):
         row = item.row()
-        textm.text()
+        item_text = item.text()
         if row == 4 or row == 5:
-            if self.is_num(Text):
+            if self.is_num(item_text):
                 self.inputrow7_8(self.colc)
                 self.inputrow10(self.colc)
 
     def table2_item_textchanged(self, item):
-        Text = item.text()
+        item_text = item.text()
         if item.column() == 4:
-            pass
-        #     save_items = []
-        #     for col in range(self.colc):
-        #         for row in range(3):
-        #             save_item = self.table1.cellWidget(row, col).currentText()
-        #             save_items.append(save_item)
-        #         for row in range(4, 6):
-        #             save_item = self.table1.item(row, col).text()
-        #             save_items.append(save_item)
+            data = self.savedata()
+            self.colc = int(item.text())   #设置级数
+            self.init_ui(self.colc)
+            self.load_data(self.colc,data)
 
-        #     self.colc = int(item.text())
-        #     self.init_ui(self.colc)
-        #     n = 0
-        #     for col in range(self.colc):
-        #         for row in range(3):
-        #             index = self.table1.cellWidget(row, col).findText(
-        #                 save_items[n])  # 查找还原的数据是否在列表里
-        #             if index != -1:
-        #                 self.table1.cellWidget(row, col).setCurrentIndex(
-        #                     index)  # 如果存在，则显示当前的数据
-        #             else:
-        #                 self.table1.cellWidget(row, col).insertItem(
-        #                     10000, save_items[n])  # 否则，将数据添加到最后一行
-        #                 maxCount = self.table1.cellWidget(row, col).count() #获取有多少行
-        #                 self.table1.cellWidget(
-        #                     row, col).setCurrentIndex(maxCount-1)  #显示最后一行
-        #             n = n + 1
-        #         for row in range(4, 6):
-        #             # todo 增加还原第4，5行数据
-        #             n = n + 1
-        #     # todo 增加级数增大第逻辑
-        #     # todo 还原温度，带宽等信息
+
         elif item.column() != 3:
-            if self.is_num(Text):
+            if self.is_num(item_text):
                 self.inputrow10(self.colc)
-    # ===1:设置表格单元格尺寸
 
+    def load_data(self,col,data):
+        save_items= data[:-3]
+        print(save_items)
+        save_setting = data[-3:] 
+        n = 0
+        for col in range(col):
+            for row in range(3):
+                index = self.table1.cellWidget(row, col).findText(
+                    save_items[n])  # 查找还原的数据是否在列表里
+                if index != -1:
+                    self.table1.cellWidget(row, col).setCurrentIndex(
+                        index)  # 如果存在，则显示当前的数据
+                else:
+                    self.table1.cellWidget(row, col).insertItem(
+                        10000, save_items[n])  # 否则，将数据添加到最后一行
+                    maxCount = self.table1.cellWidget(row, col).count() #获取有多少行
+                    self.table1.cellWidget(
+                        row, col).setCurrentIndex(maxCount-1)  #显示最后一行
+                n = n + 1
+            for row in range(4, 6):
+                #  增加还原第4，5行数据
+                self.table1.setItem(row, col, QTableWidgetItem(str(save_items[n])))
+                n = n + 1
+        # 级数增大,列数超过了保存数据个数
+            try: 
+                save_items[n]
+            except IndexError :
+                break
+        # 还原温度，带宽等信息
+        for index, col in enumerate(range(3)):
+            self.table2.setItem(1,col,QTableWidgetItem(str(save_setting[index])))
+
+    # ===1:设置表格单元格尺寸
     def settableSize(self):
         """
     5  首先，可以指定某个行或者列的大小
@@ -268,7 +277,6 @@ class MyTable(QMainWindow):
         for i in range(n):  # 如果变化的数据是某一列，只更新该列数据
             if index:
                 if i != index:
-                    print(index)
                     continue
             current_value = self.table1.cellWidget(0, i).currentText()
             self.cursor.execute(
@@ -288,7 +296,7 @@ class MyTable(QMainWindow):
         for i in range(n):
             if index:
                 if i != index:
-                    print(index)
+                    # print(index)
                     continue
             current_type = self.table1.cellWidget(0, i).currentText()
             current_model = self.table1.cellWidget(1, i).currentText()
@@ -310,7 +318,6 @@ class MyTable(QMainWindow):
         for i in range(n):
             if index:
                 if i != index:
-                    print(index)
                     continue
             current_type = self.table1.cellWidget(0, i).currentText()
             current_model = self.table1.cellWidget(1, i).currentText()
@@ -483,7 +490,6 @@ class MyTable(QMainWindow):
         elif col == 2:
             if self.editsheet_value_gain_nf():
                 return
-            print('pass')
 
     def del_component(self):
         class_ = self.table2.cellWidget(3, 0).currentText()
@@ -500,7 +506,6 @@ class MyTable(QMainWindow):
             return
         self.cursor.execute("select * from component")
         db_tupelist = self.cursor.fetchall()
-        # print(db_tupelist)
         len_ = str(len(db_tupelist))
         # cur.execute('PRAGMA table_info(component)')
         self.cursor.execute(
