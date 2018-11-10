@@ -3,7 +3,7 @@ import pickle
 import sqlite3
 import sys
 import time
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (QAction, QApplication, QComboBox, QFileDialog,
@@ -127,7 +127,7 @@ class MyTable(QMainWindow):
         file_menu.addAction(save_file_action)
         file_menu.addAction(exit_action)
         file_menu = menubar.addMenu('&视图')
-        file_menu.addAction(graphics_view_action)
+        # file_menu.addAction(graphics_view_action)
         file_menu = menubar.addMenu('&帮助')
         file_menu.addAction(about_action)
 
