@@ -184,7 +184,7 @@ class Main_windows(QMainWindow):
 
     def table2_item_textchanged(self, item):
         item_text = item.text()
-        if item.column() == 4:
+        if item.column() == 4 and item.row() == 1:
             data = self.save_data()
             if self.is_num(item.text()):
                 self.colc = int(item.text())   #设置级数
